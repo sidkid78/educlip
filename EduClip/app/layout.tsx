@@ -9,7 +9,8 @@ import {
   Cog6ToothIcon,
   MagnifyingGlassIcon,
   BellIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  FilmIcon
 } from "@heroicons/react/24/outline";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Library', href: '/library', icon: QueueListIcon, current: false },
   { name: 'Calendar', href: '/calendar', icon: CalendarIcon, current: false },
   { name: 'Architecture', href: '/architecture', icon: DocumentTextIcon, current: false },
+  { name: 'Pipeline', href: '/pipeline', icon: FilmIcon, current: false },
   { name: 'Brand Kit', href: '/brand-kit', icon: PaintBrushIcon, current: false },
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, current: false },
 ]
