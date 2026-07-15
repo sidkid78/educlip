@@ -1,0 +1,34 @@
+# ---- Secrets / env ----
+.env
+.env.*
+!*.example
+api/.env
+
+# ---- Node / Next.js (EduClip frontend) ----
+node_modules/
+.next/
+out/
+.vercel/
+next-env.d.ts
+*.tsbuildinfo
+
+# ---- Python (FastAPI backend) ----
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.venv/
+venv/
+
+# ---- Databases / uploads (local dev) ----
+*.db
+*.db-journal
+uploads/
+
+# ---- Tooling / OS ----
+.gemini-agent/
+.task_registry.json
+.DS_Store
+Thumbs.db
