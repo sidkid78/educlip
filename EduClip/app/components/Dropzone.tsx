@@ -14,12 +14,14 @@ export default function Dropzone({ onUploadSuccess, orgId, projectId }: Dropzone
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<string | null>(null);
+  const [rejected, setRejected] = useState<string | null>(null);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
     const file = acceptedFiles[0];
 
     try {
+      setRejected(null);
       setUploading(true);
       setProgress(5);
       setStatus('Uploading your file...');
@@ -90,15 +92,21 @@ export default function Dropzone({ onUploadSuccess, orgId, projectId }: Dropzone
     onDrop,
     maxFiles: 1,
     accept: {
-      'video/*': ['.mp4'],
-      'audio/*': ['.mp3', '.wav', '.m4a'],
+      'video/*': ['.mp4', '.mov', '.webm'],
+      'audio/*': ['.mp3', '.wav', '.m4a', '.aac', '.ogg'],
       'application/pdf': ['.pdf'],
       'text/plain': ['.txt'],
     },
     disabled: uploading,
+    onDropRejected: (rejections) => {
+      const name = rejections[0]?.file?.name ? `"${rejections[0].file.name}" — ` : '';
+      setRejected(`${name}unsupported file. Use video (MP4/MOV), audio (MP3/WAV/M4A), PDF, or TXT.`);
+      setTimeout(() => setRejected(null), 6000);
+    },
   });
 
   return (
+    <div>
     <div
       {...getRootProps()}
       className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200 ${
@@ -135,6 +143,12 @@ export default function Dropzone({ onUploadSuccess, orgId, projectId }: Dropzone
           </button>
         </div>
       )}
+    </div>
+    {rejected && (
+      <p className="mt-3 text-sm font-medium text-rose-700 bg-rose-50 border border-rose-100 rounded-lg px-3 py-2">
+        {rejected}
+      </p>
+    )}
     </div>
   );
 }
