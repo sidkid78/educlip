@@ -2,16 +2,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from api.config import settings
-from api.database import get_db_session, Base, engine
+from api.database import get_db_session, ensure_schema
 from api.routers import ingest, assets, billing, auth, distribution, brand, projects
 from api.routers import settings as settings_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure ORM tables exist. Idempotent (checkfirst=True) — a convenience so the
-    # app self-bootstraps on a fresh SQLite dev DB; Postgres deploys still use schema.sql.
-    Base.metadata.create_all(bind=engine)
+    # Create tables and backfill any columns missing from a pre-existing dev DB.
+    ensure_schema()
     yield
 
 

@@ -2,7 +2,8 @@ import os
 from datetime import datetime
 from uuid import uuid4
 from sqlalchemy import (
-    create_engine, Column, String, Integer, Float, ForeignKey, DateTime, Text, Enum, JSON
+    create_engine, Column, String, Integer, Float, ForeignKey, DateTime, Text, Enum, JSON,
+    inspect as sa_inspect, text,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
@@ -124,6 +125,34 @@ class Publication(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     asset = relationship("Asset", back_populates="publications")
+
+def ensure_schema():
+    """
+    Create missing tables, then (SQLite dev only) backfill any model columns that a
+    pre-existing table is missing. create_all never ALTERs existing tables, so a dev
+    DB created before a column was added would otherwise raise 'no such column'.
+    """
+    Base.metadata.create_all(bind=engine)
+    if not DATABASE_URL.startswith("sqlite"):
+        return  # production migrations are handled out of band (schema.sql / Alembic)
+
+    insp = sa_inspect(engine)
+    tables = set(insp.get_table_names())
+    for table in Base.metadata.sorted_tables:
+        if table.name not in tables:
+            continue
+        existing_cols = {c["name"] for c in insp.get_columns(table.name)}
+        for col in table.columns:
+            if col.name in existing_cols:
+                continue
+            try:
+                col_type = col.type.compile(dialect=engine.dialect)
+                with engine.begin() as conn:
+                    conn.execute(text(f'ALTER TABLE "{table.name}" ADD COLUMN "{col.name}" {col_type}'))
+                print(f"[schema] added missing column {table.name}.{col.name}")
+            except Exception as e:
+                print(f"[schema] could not add {table.name}.{col.name}: {e}")
+
 
 # Logical Multi-Tenancy / RLS Guard Helpers
 def get_db_session():
